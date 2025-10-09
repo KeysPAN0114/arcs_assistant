@@ -1,0 +1,2 @@
+*.bin filter=lfs diff=lfs merge=lfs -text
+ffmpeg-64 filter=lfs diff=lfs merge=lfs -text
