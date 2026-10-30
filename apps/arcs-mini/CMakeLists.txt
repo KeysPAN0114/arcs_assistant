@@ -21,6 +21,8 @@ project(arcs-mini)
 include(version.cmake)
 
 add_definitions(-DLISTEN_CLOUD -DCONFIG_EXT_RAM)
+add_definitions(-DMQTT_DO_NOT_USE_CUSTOM_CONFIG)
+add_definitions(-DMQTT_AGENT_DO_NOT_USE_CUSTOM_CONFIG)
 
 # Add project root directory to include path for app-config-tls-generic.h and memap.h
 listenai_include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -48,6 +50,9 @@ endif()
 add_subdirectory(mcp-tools)
 add_subdirectory(voice_intent)
 add_subdirectory(voice_player)
+if(CONFIG_MQTTAPP)
+    add_subdirectory(mqttapp)
+endif()
 
 listenai_add_executable(${PROJECT_NAME})
 

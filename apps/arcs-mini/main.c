@@ -27,6 +27,9 @@
 #include "voice_cloud.h"
 #include "miniapp.h"
 #include "app_ble_common.h"
+#ifdef CONFIG_MQTTAPP
+#include "mqttapp/mqttapp.h"
+#endif
 
 /* 被动网络提示的单次触发状态。 */
 static bool s_netcfg_tone_latched = false;
@@ -280,6 +283,11 @@ int main(int argc, char **argv)
 #ifdef CONFIG_MINIAPP
     if (miniapp_init() != 0) {
         LOGE("Miniapp initialization failed");
+    }
+#endif
+#ifdef CONFIG_MQTTAPP
+    if (mqttapp_init() != 0) {
+        LOGE("MQTT app initialization failed");
     }
 #endif
     app_show_initial_wifi_info_if_needed();

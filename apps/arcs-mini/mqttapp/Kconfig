@@ -1,0 +1,6 @@
+config MQTTAPP
+    bool "MQTT cloud application"
+    default y
+    help
+      Connect the ARCS-MINI application to an EMQX cloud broker using
+      MQTT over TLS and the coreMQTT-Agent command loop.
