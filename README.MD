@@ -12,6 +12,7 @@
 - 云端语音服务对接
 - 本地音频播放
 - WiFi/BLE 网络连接
+- [MQTT 语音灯光控制与 MQTT 管理页面](docs/mqttapp-voice-light-control.md#mqtt-管理页面)
 
 ## 环境搭建
 

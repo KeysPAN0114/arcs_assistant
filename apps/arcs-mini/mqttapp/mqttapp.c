@@ -26,6 +26,7 @@
 
 #include "mqttapp.h"
 #include "mqttapp_config.h"
+#include "mqtt_manager.h"
 
 #define TAG "mqttapp"
 
@@ -181,6 +182,9 @@ static void mqttapp_incoming_publish_callback(MQTTAgentContext_t *agent_context,
          publish_info->pTopicName,
          (int)publish_info->payloadLength,
          (const char *)publish_info->pPayload);
+
+    mqtt_manager_update_from_json((const char *)publish_info->pPayload,
+                                  publish_info->payloadLength);
 }
 
 static void mqttapp_command_complete_callback(MQTTAgentCommandContext_t *command_context,
@@ -676,6 +680,19 @@ static void mqttapp_voice_command_task(void *argument)
             LOGI("Published light command to %s: %s",
                  MQTTAPP_VOICE_COMMAND_TOPIC,
                  payload);
+            if (strcmp(message.command, "开灯") == 0 ||
+                strcmp(message.command, "打开灯") == 0) {
+                s_online_light_state = true;
+                s_online_light_command_tick = xTaskGetTickCount();
+                s_online_light_command_seen = true;
+                mqtt_manager_set_light_state(true);
+            } else if (strcmp(message.command, "关灯") == 0 ||
+                       strcmp(message.command, "关闭灯") == 0) {
+                s_online_light_state = false;
+                s_online_light_command_tick = xTaskGetTickCount();
+                s_online_light_command_seen = true;
+                mqtt_manager_set_light_state(false);
+            }
         } else {
             LOGE("Publishing voice command failed: %d", mqtt_status);
         }
@@ -771,6 +788,11 @@ static void mqttapp_network_message(void *unused,
 int mqttapp_init(void)
 {
     BaseType_t result;
+
+    if (mqtt_manager_ui_init() != 0) {
+        LOGE("Initializing MQTT manager UI failed");
+        return -1;
+    }
 
     if (MQTTAPP_BROKER_HOST[0] == '\0' ||
         MQTTAPP_CLIENT_ID[0] == '\0' ||

@@ -28,9 +28,17 @@
 #include "button_factory_reset.h"
 #include "service_power_policy.h"
 
+#ifdef CONFIG_MQTTAPP
+#include "mqtt_manager.h"
+#endif
+
 /* ==================== 模块配置与状态 ==================== */
 
 #define APP_BUTTON_PRIMARY_ID 0U
+
+#ifdef CONFIG_MQTTAPP
+static void app_button_handle_quadruple_click(void);
+#endif
 
 /* ==================== 版型相关展示策略 ==================== */
 
@@ -365,6 +373,14 @@ static void app_button_handle_repeat_click(void)
     button_factory_reset();
 }
 
+#ifdef CONFIG_MQTTAPP
+static void app_button_handle_quadruple_click(void)
+{
+    LISA_LOGI(TAG, "power button quadruple click, opening MQTT manager");
+    (void)mqtt_manager_open();
+}
+#endif
+
 /*
  * 处理电源键长按动作，并按当前交互场景依次分流：
  * 闹钟响铃时长按关闭闹钟，由全局拦截策略优先处理；
@@ -376,6 +392,12 @@ static void app_button_handle_long_hold(void)
     if (button_camera_preview_handle_long_hold()) {
         return;
     }
+
+#ifdef CONFIG_MQTTAPP
+    if (mqtt_manager_handle_long_hold()) {
+        return;
+    }
+#endif
 
     /* 新 boot 下 power_shutdown 会按供电方式分流。老 boot 下 USB 供电时
      * 拉低 PWR_LOCK 无效，因此忽略关机，避免产生已经关机的错觉。 */
@@ -407,7 +429,10 @@ static void app_button_dispatch_action(voice_msg_button_action_t action)
         app_button_handle_triple_click();
         break;
     case VOICE_MSG_BUTTON_ACTION_QUADRUPLE_CLICK:
-        /* 四击：预留，当前无操作。 */
+#ifdef CONFIG_MQTTAPP
+        app_button_handle_quadruple_click();
+#endif
+        /* 四连击：进入 MQTT 管理页面。 */
         break;
     case VOICE_MSG_BUTTON_ACTION_QUINTUPLE_CLICK:
     case VOICE_MSG_BUTTON_ACTION_SEXTUPLE_CLICK:

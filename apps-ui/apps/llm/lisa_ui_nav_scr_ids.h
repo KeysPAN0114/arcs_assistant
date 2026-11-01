@@ -20,6 +20,9 @@ enum {
 #ifdef CONFIG_LOG_UPLOAD
     LISA_UI_NAV_SCR_ID_LOG_UPLOAD,        // 日志上传页面
 #endif
+#ifdef CONFIG_MQTTAPP
+    LISA_UI_NAV_SCR_ID_MQTT_MANAGER,      // MQTT 管理页面
+#endif
 
     LISA_UI_NAV_SCR_ID_MINIAPP,
 };

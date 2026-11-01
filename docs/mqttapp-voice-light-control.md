@@ -134,3 +134,40 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\adb_download.ps1 `
 
 - `mqttapp_config.h` 当前包含明文 Broker 地址、账号和密码，生产环境应改为设备唯一凭证或安全配置下发方式。
 - ESP 若不直接使用 `{"light":x}` 协议，可由 ESP 解析 JSON，或在 EMQX 侧转换为目标设备需要的 payload。
+
+## MQTT 管理页面
+
+### 功能说明
+
+| 功能 | 实现 |
+| --- | --- |
+| 进入页面 | 普通模式下电源键四连击进入 `MQTT 管理` 页面 |
+| 退出页面 | 页面内长按电源键返回原页面，复用拍照预览的长按退出分流逻辑 |
+| 灯状态 | 显示本地记录的最近一次开灯/关灯状态，不从订阅消息解析灯字段 |
+| 温度显示 | 从订阅消息读取 `temperature` 或 `temp` |
+| 湿度显示 | 从订阅消息读取 `humidity`、`hum`、`humi` 或 `rh` |
+| 数据刷新 | MQTT 接收任务收到 `/topic/espcli/up` 后，将温湿度调度到 UI 线程更新 |
+| 值格式 | 温度显示为 `29.8 °C`，湿度显示为 `76.8 %`，保留一位小数 |
+
+订阅 payload 示例：
+
+```json
+{"temp":29.76,"humi":76.80}
+```
+
+实现约束：
+
+- 闹钟响铃、OTA 确认等按键拦截保持原有优先级。
+- 灯状态不从订阅消息解析，避免设备上报 payload 覆盖本地控制结果。
+- LVGL 标签的浮点格式化使用标准库 `snprintf`，避免 `%f` 被显示成 `f`。
+- 页面卡片高度、间距和主题文本宽度已适配屏幕，长文本使用省略显示。
+- 新增实现集中在 `apps/arcs-mini/mqttapp/mqtt_manager.c`、`apps/arcs-mini/mqttapp/mqtt_manager.h`，并在 `mqttapp.c` 的 MQTT 接收回调中更新页面。
+- 导航 ID 和按键接入采用条件编译，未启用 `CONFIG_MQTTAPP` 时不影响原有按键行为。
+
+### 本次验证
+
+- `arcs_mini3` 固件构建通过，生成 `build-mqttapp-mini3/arcs-mini.bin`。
+- 链接阶段仅保留工具链已有的 `_times` 未实现警告。
+- 已通过 ADB app-only 模式烧录到设备 `6d7b101a3423caa5`，烧录地址为 `0x600000`。
+- 烧录完成后设备已重新上线。
+- 已人工验证电源键四连击进入页面、页面布局、长按退出和 MQTT 温湿度刷新正常。

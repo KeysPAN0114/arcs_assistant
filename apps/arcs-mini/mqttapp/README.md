@@ -2,6 +2,10 @@
 
 `mqttapp` 在现有 `apps/arcs-mini` 应用中运行，通过 MQTT over TLS 连接 EMQX 云平台。
 
+## 功能指引
+
+- [MQTT 语音灯光控制与管理页面](../../../docs/mqttapp-voice-light-control.md#mqtt-管理页面)：包含语音开灯/关灯、MQTT 主题与 payload、管理页面进入/退出方式，以及温湿度数据刷新说明。
+
 ## 配置
 
 编辑 `mqttapp_config.h`，至少填写：
